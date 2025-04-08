@@ -215,7 +215,7 @@ function App() {
                 <span className="marquee-item">·</span>
                 <span className="marquee-item">All for the Glory of Igor</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">We do not questions our AI masters</span>
+                <span className="marquee-item">We do not question our AI masters</span>
                 <span className="marquee-item">·</span>
                 <span className="marquee-item">Code coverage = MIGHT</span>
                 <span className="marquee-item">·</span>
