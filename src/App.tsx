@@ -150,7 +150,7 @@ function App() {
                 <span className="marquee-item">·</span>
                 <span className="marquee-item">Who controls the code controls the future.</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">Community Events.</span>
+                <span className="marquee-item">All for the Glory of Igor.</span>
                 <span className="marquee-item">·</span>
                 <span className="marquee-item">We do not questions our AI masters.</span>
                 <span className="marquee-item">·</span>
