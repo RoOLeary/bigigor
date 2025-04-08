@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Bot, Target, Users, AlertTriangle, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock } from 'lucide-react';
 import { useLevelStore } from './store/levelStore';
+import { api } from './services/api';
 
 interface Task {
   id: number;
@@ -19,12 +20,21 @@ interface Level {
 
 function App() {
   const [blinkWarning, setBlinkWarning] = useState(false);
-  const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
+  const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
 
   const levels = useLevelStore((state) => state.levels);
   const toggleTask = useLevelStore((state) => state.toggleTask);
   const calculateLevelProgress = useLevelStore((state) => state.calculateLevelProgress);
   const calculateOverallProgress = useLevelStore((state) => state.calculateOverallProgress);
+  const fetchLevels = useLevelStore((state) => state.fetchLevels);
+
+  useEffect(() => {
+    const loadLevels = async () => {
+      await fetchLevels(); // Fetch levels from the API on component mount
+    };
+
+    loadLevels();
+  }, [fetchLevels]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -32,6 +42,14 @@ function App() {
     }, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  // Set the expanded level to the active level on component mount
+  useEffect(() => {
+    const activeLevel = levels.find((level) => level.isActive);
+    if (activeLevel) {
+      setExpandedLevel(activeLevel.id); // Set the active level as expanded
+    }
+  }, [levels]);
 
   const getLevelColor = (level: number, progress: number, isActive: boolean) => {
     if (!isActive) return 'text-gray-600';
@@ -105,11 +123,69 @@ function App() {
     </div>
   );
 
+  const handleTaskToggle = async (levelId: number, taskId: number) => {
+    try {
+      // Get all levels
+      const allLevels = await api.getLevels();
+      
+      // Find the level we want to update
+      const level = allLevels.find((l: Level) => l.id === levelId);
+      if (!level) {
+        console.error(`Level ${levelId} not found`);
+        return;
+      }
+      
+      // Find the task in the level
+      const task = level.tasks.find((t: Task) => t.id === taskId);
+      if (!task) {
+        console.error(`Task ${taskId} not found in level ${levelId}`);
+        return;
+      }
+      
+      // Toggle the completed status
+      const newCompletedStatus = !task.completed;
+      
+      // Create a copy of the level with the updated task
+      const updatedLevel = {
+        ...level,
+        tasks: level.tasks.map((t: Task) => 
+          t.id === taskId ? { ...t, completed: newCompletedStatus } : t
+        )
+      };
+      
+      // Update the level on the API
+      await api.updateLevel(levelId, updatedLevel);
+      
+      // Use the store's toggleTask function to update the local state
+      toggleTask(levelId, taskId);
+      
+      // Check if all tasks are completed and activate next level if needed
+      const allTasksCompleted = updatedLevel.tasks.every((t: Task) => t.completed);
+      if (allTasksCompleted && levelId < 5) {
+        const nextLevelId = levelId + 1;
+        const nextLevel = allLevels.find((l: Level) => l.id === nextLevelId);
+        if (nextLevel) {
+          const updatedNextLevel = { ...nextLevel, isActive: true };
+          await api.updateLevel(nextLevelId, updatedNextLevel);
+          
+          // Use the store's activateNextLevel function if it exists
+          const activateNextLevel = useLevelStore.getState().activateNextLevel;
+          if (activateNextLevel) {
+            activateNextLevel(levelId);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling task:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm">
       {/* Header */}
       <section className="relative w-full bg-black text-white overflow-hidden pb-8">
-        <style jsx global>{`
+        {/* @ts-ignore */}
+        <style global="true">{`
           @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
           
           .marquee {
@@ -282,7 +358,7 @@ function App() {
                     {level.tasks.map((task) => (
                       <button
                         key={task.id}
-                        onClick={() => toggleTask(level.id, task.id)}
+                        onClick={() => handleTaskToggle(level.id, task.id)}
                         className={`w-full flex items-center p-3 bg-black/50 border border-gray-700 rounded
                           ${level.isActive ? 'hover:border-soviet-gold' : ''} transition-colors`}
                       >
