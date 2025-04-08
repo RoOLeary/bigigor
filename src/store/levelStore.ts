@@ -189,7 +189,6 @@ export const useLevelStore = create<LevelState>((set, get) => ({
     }
   },
   
-
   addWarning: async (levelId: number) => {
     set({ loading: true, error: null });
     try {
