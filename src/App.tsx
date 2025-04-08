@@ -263,7 +263,7 @@ function App() {
           REMINDER: THREE WARNINGS WILL RESULT IN IMMEDIATE RE-EDUCATION PROCEEDINGS
         </p>
         <p className="font-propaganda text-sm text-soviet-gold tracking-wider">
-          BY ORDER OF THE MINISTRY OF PRODUCTION - GLORY TO BIG IGOR
+          BY ORDER OF THE FINDEST MINISTRY OF TRUTH AND AI - GLORY TO BIG IGOR
         </p>
       </div>
     </div>
