@@ -1,7 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Bot, Target, Users, AlertTriangle, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock } from 'lucide-react';
 import { useLevelStore } from './store/levelStore';
 import { api } from './services/api';
+import Confetti from 'react-confetti';
+import { useWindowSize } from '@uidotdev/usehooks'
 
 interface Task {
   id: number;
@@ -21,6 +24,8 @@ interface Level {
 function App() {
   const [blinkWarning, setBlinkWarning] = useState(false);
   const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
 
   const levels = useLevelStore((state) => state.levels);
   const toggleTask = useLevelStore((state) => state.toggleTask);
@@ -125,41 +130,21 @@ function App() {
 
   const handleTaskToggle = async (levelId: number, taskId: number) => {
     try {
-      // Get all levels
       const allLevels = await api.getLevels();
-      
-      // Find the level we want to update
       const level = allLevels.find((l: Level) => l.id === levelId);
-      if (!level) {
-        console.error(`Level ${levelId} not found`);
-        return;
-      }
-      
-      // Find the task in the level
+      if (!level) return;
       const task = level.tasks.find((t: Task) => t.id === taskId);
-      if (!task) {
-        console.error(`Task ${taskId} not found in level ${levelId}`);
-        return;
-      }
-      
-      // Toggle the completed status
+      if (!task) return;
+
       const newCompletedStatus = !task.completed;
-      
-      // Create a copy of the level with the updated task
       const updatedLevel = {
         ...level,
-        tasks: level.tasks.map((t: Task) => 
-          t.id === taskId ? { ...t, completed: newCompletedStatus } : t
-        )
+        tasks: level.tasks.map((t: Task) => t.id === taskId ? { ...t, completed: newCompletedStatus } : t)
       };
-      
-      // Update the level on the API
+
       await api.updateLevel(levelId, updatedLevel);
-      
-      // Use the store's toggleTask function to update the local state
       toggleTask(levelId, taskId);
-      
-      // Check if all tasks are completed and activate next level if needed
+
       const allTasksCompleted = updatedLevel.tasks.every((t: Task) => t.completed);
       if (allTasksCompleted && levelId < 5) {
         const nextLevelId = levelId + 1;
@@ -167,13 +152,13 @@ function App() {
         if (nextLevel) {
           const updatedNextLevel = { ...nextLevel, isActive: true };
           await api.updateLevel(nextLevelId, updatedNextLevel);
-          
-          // Use the store's activateNextLevel function if it exists
           const activateNextLevel = useLevelStore.getState().activateNextLevel;
-          if (activateNextLevel) {
-            activateNextLevel(levelId);
-          }
+          if (activateNextLevel) activateNextLevel(levelId);
         }
+
+        // Fire confetti
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 10000);
       }
     } catch (error) {
       console.error('Error toggling task:', error);
@@ -182,6 +167,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm">
+      {/* @ts-ignore */}
+      {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={750} />} 
       {/* Header */}
       <section className="relative w-full bg-black text-white overflow-hidden pb-8">
         {/* @ts-ignore */}
