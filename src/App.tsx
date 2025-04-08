@@ -106,8 +106,65 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-black/50 text-gray-100 py-12 px-4 backdrop-blur-sm">
+    <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm">
       {/* Header */}
+      <section className="relative w-full bg-black text-white overflow-hidden pb-8">
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          
+          .marquee {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+          }
+          
+          .marquee-content {
+            display: flex;
+            animation: marquee 25s linear infinite;
+            white-space: nowrap;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.75rem;
+          }
+          
+          .marquee-item {
+            flex-shrink: 0;
+            padding: 0 1rem;
+            color: #f00;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+          }
+          
+          @keyframes marquee {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+        `}</style>
+        <div className="marquee">
+          <div className="marquee-content">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="flex items-center">
+                <span className="marquee-item">Codecrime does not entail death. Codecrime is death.</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">Who controls the code controls the future.</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">Community Events.</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">We do not questions our AI masters.</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">Code coverage = MIGHT.</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">NO FAULT EXCEPT FOR THE USER.</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">Code is Peace.</span>
+                <span className="marquee-item">·</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <div className="max-w-4xl mx-auto text-center mb-12">
         <div className="relative w-full h-48 mb-8 rounded-lg overflow-hidden">
           <div className="relative z-10 h-full flex flex-col items-center justify-center">
