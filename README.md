@@ -1,6 +1,6 @@
 # Big Igor - Gamified Task Management System. Brought to you by the FINDEST MINISTRY OF TRUTH AND AI.
 
-Big Igor is a Soviet-themed, gamified task management application that turns productivity into an engaging experience. The application features a unique aesthetic inspired by Soviet-era propaganda posters and combines it with modern task management functionality.
+Big Igor is a Soviet-themed, gamified task management application that turns productivity into an engaging experience. The application features a unique aesthetic inspired by Soviet-era propaganda posters and combines it with modern task management functionality. This is done as part of an initiative to gamify and track KPIs.
 
 ## 🎯 Features
 
