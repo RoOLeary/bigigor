@@ -146,17 +146,19 @@ function App() {
           <div className="marquee-content">
             {[...Array(2)].map((_, i) => (
               <div key={i} className="flex items-center">
-                <span className="marquee-item">Codecrime does not entail death. Codecrime is death.</span>
+                <span className="marquee-item">Codecrime does not entail death. Codecrime is death</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">Who controls the code controls the future.</span>
+                <span className="marquee-item">Who controls the code controls the future</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">All for the Glory of Igor.</span>
+                <span className="marquee-item">All for the Glory of Igor</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">We do not questions our AI masters.</span>
+                <span className="marquee-item">We do not questions our AI masters</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">Code coverage = MIGHT.</span>
+                <span className="marquee-item">Code coverage = MIGHT</span>
                 <span className="marquee-item">·</span>
-                <span className="marquee-item">NO FAULT EXCEPT FOR THE USER.</span>
+                <span className="marquee-item">NO FAULT EXCEPT FOR THE USER</span>
+                <span className="marquee-item">·</span>
+                <span className="marquee-item">AI is Mother, AI is Father</span>
                 <span className="marquee-item">·</span>
                 <span className="marquee-item">Code is Peace.</span>
                 <span className="marquee-item">·</span>
@@ -317,10 +319,10 @@ function App() {
       {/* Footer */}
       <div className="max-w-4xl mx-auto mt-12 text-center">
         <p className="font-propaganda text-lg text-soviet-red mb-2 tracking-wider">
-          REMINDER: THREE WARNINGS WILL RESULT IN IMMEDIATE RE-EDUCATION PROCEEDINGS
+          REMINDER: THREE WARNINGS WILL RESULT IN IMMEDIATE RE-EDUCATION PROCEEDINGS IN ROOM 101
         </p>
         <p className="font-propaganda text-sm text-soviet-gold tracking-wider">
-          BY ORDER OF THE FINDEST MINISTRY OF TRUTH AND AI - GLORY TO BIG IGOR
+          BY ORDER OF THE FINDEST MINISTRY OF TRUTH AND AI - GLORY TO BIG IGOR.
         </p>
       </div>
     </div>
