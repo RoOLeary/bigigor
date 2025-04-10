@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, Target, Users, AlertTriangle, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock, Mail } from 'lucide-react';
+import { Bot, Target, Users, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock, Mail } from 'lucide-react';
 import { useLevelStore } from './store/levelStore';
 import { useAuthStore } from './store/authStore';
 import { api } from './services/api';
@@ -29,20 +29,6 @@ interface Level {
   isActive: boolean;
   warnings: number;
 }
-
-interface AuthorizedUser {
-  email: string;
-  role: string;
-}
-
-const AUTHORIZED_USERS: AuthorizedUser[] = [
-  { email: "guillaiume@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "cyril@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "sarantos@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "aytac@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "ronan@ministry.gov", role: "INNER_CIRCLE" },
-  { email: "watcher@ministry.gov", role: "OBSERVER" }
-];
 
 function App() {
   // Authentication state and form inputs
@@ -109,6 +95,13 @@ function App() {
     }
   }, [levels]);
 
+  /**
+   * Determines the text color for a level based on its progress and active status
+   * @param level - The level number (0-based index)
+   * @param progress - The progress percentage
+   * @param isActive - Whether the level is currently active
+   * @returns The appropriate CSS class for the text color
+   */
   const getLevelColor = (level: number, progress: number, isActive: boolean) => {
     if (!isActive) return 'text-gray-600';
     if (progress >= 100) return 'text-gray-600';
@@ -123,16 +116,33 @@ function App() {
     return colors[level];
   };
 
+  /**
+   * Toggles the expanded state of a level
+   * @param id - The ID of the level to toggle
+   */
   const toggleLevel = (id: number) => {
     setExpandedLevel(expandedLevel === id ? null : id);
   };
 
+  /**
+   * Determines the progress bar color based on completion status and progress
+   * @param progress - The progress percentage
+   * @param isActive - Whether the level is active
+   * @param isCompleted - Whether the level is completed
+   * @returns The appropriate CSS class for the progress bar color
+   */
   const getProgressBarColor = (progress: number, isActive: boolean, isCompleted: boolean) => {
     if (!isActive) return 'bg-gray-600';
     if (isCompleted) return 'bg-green-600';
     return `bg-gradient-to-r from-soviet-red via-yellow-600 to-green-600 bg-[length:400%_400%]`;
   };
 
+  /**
+   * Renders the progress indicator for a level, including task count and percentage
+   * @param level - The level object
+   * @param progress - The progress percentage
+   * @returns JSX for the progress indicator
+   */
   const renderProgressIndicator = (level: Level, progress: number) => {
     const completedTasks = level.tasks.filter((t: Task) => t.completed).length;
     const isCompleted = completedTasks === 5;
@@ -173,6 +183,10 @@ function App() {
     );
   };
 
+  /**
+   * Renders a completion badge with a checkmark
+   * @returns JSX for the completion badge
+   */
   const renderCompletionBadge = () => (
     <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-600">
       <Check className="w-4 h-4 text-white" />
@@ -521,7 +535,7 @@ function App() {
                   {!isCompleted && level.warnings > 0 && (
                     <div className="ml-4 flex items-center">
                       {[...Array(level.warnings)].map((_, i) => (
-                        <AlertTriangle key={i} className="w-4 h-4 text-soviet-gold mr-1" />
+                        <Trophy key={i} className="w-4 h-4 text-soviet-gold mr-1" />
                       ))}
                     </div>
                   )}

@@ -2,12 +2,18 @@ import { create } from 'zustand';
 import { useAuthStore } from './authStore';
 import { api } from '../services/api';
 
+/**
+ * Interface defining the structure of a task
+ */
 interface Task {
   id: string;
   text: string;
   completed: boolean;
 }
 
+/**
+ * Interface defining the structure of a level
+ */
 interface Level {
   id: string;
   name: string;
@@ -17,6 +23,9 @@ interface Level {
   warnings: number;
 }
 
+/**
+ * Interface defining the shape of the level store state and actions
+ */
 interface LevelState {
   levels: Level[];
   activeLevel: number;
@@ -24,9 +33,9 @@ interface LevelState {
   error: string | null;
   fetchLevels: () => Promise<void>;
   toggleTask: (levelId: string, taskId: string) => Promise<void>;
-  addWarning: (levelId: number) => Promise<void>;
+  addWarning: (levelId: string) => Promise<void>;
   activateNextLevel: (currentLevelId: number) => Promise<void>;
-  calculateLevelProgress: (levelId: number) => number;
+  calculateLevelProgress: (levelId: string) => number;
   calculateOverallProgress: () => number;
   unlockLevel: (levelId: number) => Promise<void>;
   resetLevels: () => Promise<void>;
@@ -206,7 +215,7 @@ export const useLevelStore = create<LevelState>((set, get) => ({
     }
   },
   
-  addWarning: async (levelId: number) => {
+  addWarning: async (levelId: string) => {
     // Check if user has permission to edit
     if (!hasEditPermission()) {
       set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
@@ -216,15 +225,15 @@ export const useLevelStore = create<LevelState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const state = get();
-      const level = state.levels.find(l => l.id === levelId.toString());
+      const level = state.levels.find(l => l.id === levelId);
       if (!level) return;
       
       const updatedLevel = { ...level, warnings: level.warnings + 1 };
-      await api.updateLevel(levelId.toString(), updatedLevel);
+      await api.updateLevel(levelId, updatedLevel);
       
       set((state: LevelState) => ({
         levels: state.levels.map((level: Level) =>
-          level.id === levelId.toString()
+          level.id === levelId
             ? { ...level, warnings: level.warnings + 1 }
             : level
         ),
@@ -264,15 +273,24 @@ export const useLevelStore = create<LevelState>((set, get) => ({
     }
   },
 
-  calculateLevelProgress: (levelId: number) => {
+  /**
+   * Calculates the progress percentage for a specific level
+   * @param levelId - The ID of the level to calculate progress for
+   * @returns The progress percentage (0-100)
+   */
+  calculateLevelProgress: (levelId: string) => {
     const state = get();
-    const level = state.levels.find((l: Level) => l.id === levelId.toString());
+    const level = state.levels.find((l: Level) => l.id === levelId);
     if (!level) return 0;
     
     const completedTasks = level.tasks.filter((task: Task) => task.completed).length;
     return (completedTasks / level.tasks.length) * 100;
   },
 
+  /**
+   * Calculates the overall progress across all levels
+   * @returns The total progress percentage (0-100)
+   */
   calculateOverallProgress: () => {
     const state = get();
     const totalTasks = state.levels.length * 5; // 5 tasks per level
@@ -309,6 +327,25 @@ export const useLevelStore = create<LevelState>((set, get) => ({
       }));
     } catch (error) {
       set({ error: 'Failed to unlock level', loading: false });
+    }
+  },
+
+  /**
+   * Resets all levels to their initial state
+   */
+  resetLevels: async () => {
+    // Check if user has permission to edit
+    if (!hasEditPermission()) {
+      set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
+      return;
+    }
+
+    set({ loading: true, error: null });
+    try {
+      await api.resetLevels();
+      set({ levels: initialLevels, loading: false });
+    } catch (error) {
+      set({ error: 'Failed to reset levels', loading: false });
     }
   },
 }));
