@@ -38,6 +38,7 @@ function App() {
   const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showVictoryBanner, setShowVictoryBanner] = useState(false);
+  const [showUnauthorizedOverlay, setShowUnauthorizedOverlay] = useState(false);
   const { width, height } = useWindowSize();
   
   // Ref to track if victory sound has been played
@@ -199,7 +200,9 @@ function App() {
     
     // Check if user has permission to edit
     if (!user || !['INNER_CIRCLE', 'PARTY_MEMBER'].includes(user.role)) {
-      console.error('Access denied: Insufficient clearance level');
+      setShowUnauthorizedOverlay(true);
+      // Hide the overlay after 3 seconds
+      setTimeout(() => setShowUnauthorizedOverlay(false), 3000);
       return;
     }
 
@@ -344,6 +347,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm relative">
+      {showUnauthorizedOverlay && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+          <div className="text-center max-w-2xl mx-auto px-4">
+            <h1 className="text-4xl md:text-6xl font-propaganda text-soviet-red mb-8 tracking-widest leading-none drop-shadow-[0_0_20px_rgba(204,0,0,0.8)] animate-pulse">
+              UNAUTHORIZED ACTION DETECTED
+            </h1>
+            <p className="text-2xl md:text-4xl font-propaganda text-soviet-gold mb-4 tracking-wider drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">
+              AUTHORITIES ARE EN ROUTE
+            </p>
+            <div className="mt-8">
+              <Bot className="w-16 h-16 md:w-20 md:h-20 text-soviet-red mx-auto animate-bounce" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {showVictoryBanner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style={{ height: '100vh' }}>
           <div className="text-center">

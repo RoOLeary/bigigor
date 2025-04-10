@@ -15,7 +15,7 @@ export const AUTHORIZED_USERS: AuthorizedUser[] = [
   { email: "sarantos@findest.eu", role: "PARTY_MEMBER" },
   { email: "aytac@findest.eu", role: "PARTY_MEMBER" },
   { email: "ronan@findest.eu", role: "INNER_CIRCLE" },
-  { email: "proletariat@mfindest.euv", role: "OBSERVER" }
+  { email: "proletariat@findest.eu", role: "OBSERVER" }
 ];
 
 // Interface defining the shape of our auth state and actions
@@ -46,7 +46,18 @@ const validateCredentials = (email: string, password: string): { valid: boolean;
     return { valid: false, error: "INVALID EMAIL FORMAT - MINISTRY EMAILS ONLY" };
   }
 
-  // Validate password requirements:
+  // Check if user is in the authorized users list
+  const authorizedUser = AUTHORIZED_USERS.find(user => user.email === email);
+  if (!authorizedUser) {
+    return { valid: false, error: "ACCESS DENIED - UNAUTHORIZED USER" };
+  }
+
+  // Special case for proletariat user
+  if (email === "proletariat@findest.eu" && password === "proletariat") {
+    return { valid: true };
+  }
+
+  // Validate password requirements for other users:
   // - At least 8 characters
   // - Contains uppercase letter
   // - Contains number
@@ -54,12 +65,6 @@ const validateCredentials = (email: string, password: string): { valid: boolean;
   const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
   if (!passwordRegex.test(password)) {
     return { valid: false, error: "PASSWORD DOES NOT MEET SECURITY REQUIREMENTS" };
-  }
-
-  // Check if user is in the authorized users list
-  const authorizedUser = AUTHORIZED_USERS.find(user => user.email === email);
-  if (!authorizedUser) {
-    return { valid: false, error: "ACCESS DENIED - UNAUTHORIZED USER" };
   }
 
   return { valid: true };
