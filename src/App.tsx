@@ -337,7 +337,7 @@ function App() {
           </form>
           <div className="text-center mt-4">
             <p className="text-soviet-red font-propaganda text-sm tracking-wider animate-pulse">
-              UNAUTHORIZED ACCESS WILL BE SEVERELY [AND RESOLUTELY] PUNISHED
+              UNAUTHORIZED ACCESS WILL BE SEVERELY [ AND RESOLUTELY ] PUNISHED
             </p>
           </div>
         </div>
