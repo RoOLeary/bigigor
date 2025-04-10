@@ -1,10 +1,19 @@
-
-import { useState, useEffect } from 'react';
-import { Bot, Target, Users, AlertTriangle, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Bot, Target, Users, AlertTriangle, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock, Mail } from 'lucide-react';
 import { useLevelStore } from './store/levelStore';
+import { useAuthStore } from './store/authStore';
 import { api } from './services/api';
 import Confetti from 'react-confetti';
-import { useWindowSize } from '@uidotdev/usehooks'
+import { useWindowSize } from '@uidotdev/usehooks';
+
+// Victory sound effect for game completion
+import victorySound from './assets/1984.mp3';
+const VICTORY_SOUND = new Audio(victorySound);
+
+// Add error handling for audio
+VICTORY_SOUND.onerror = (e) => {
+  console.error('Error loading audio:', e);
+};
 
 interface Task {
   id: number;
@@ -21,26 +30,70 @@ interface Level {
   warnings: number;
 }
 
+interface AuthorizedUser {
+  email: string;
+  role: string;
+}
+
+const AUTHORIZED_USERS: AuthorizedUser[] = [
+  { email: "guillaiume@ministry.gov", role: "PARTY_MEMBER" },
+  { email: "cyril@ministry.gov", role: "PARTY_MEMBER" },
+  { email: "sarantos@ministry.gov", role: "PARTY_MEMBER" },
+  { email: "aytac@ministry.gov", role: "PARTY_MEMBER" },
+  { email: "ronan@ministry.gov", role: "INNER_CIRCLE" },
+  { email: "watcher@ministry.gov", role: "OBSERVER" }
+];
+
 function App() {
+  // Authentication state and form inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [blinkWarning, setBlinkWarning] = useState(false);
   const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showVictoryBanner, setShowVictoryBanner] = useState(false);
   const { width, height } = useWindowSize();
+  
+  // Ref to track if victory sound has been played
+  const victorySoundPlayed = useRef(false);
 
+  // Authentication hooks
+  const { isAuthenticated, error, fadeOut, login, clearError, logout } = useAuthStore();
+
+  // Game state hooks
   const levels = useLevelStore((state) => state.levels);
   const toggleTask = useLevelStore((state) => state.toggleTask);
   const calculateLevelProgress = useLevelStore((state) => state.calculateLevelProgress);
   const calculateOverallProgress = useLevelStore((state) => state.calculateOverallProgress);
   const fetchLevels = useLevelStore((state) => state.fetchLevels);
+  const resetLevels = useLevelStore((state) => state.resetLevels);
 
+  // Check for game completion and play victory sound
   useEffect(() => {
-    const loadLevels = async () => {
-      await fetchLevels(); // Fetch levels from the API on component mount
-    };
+    const allLevelsComplete = levels.every(level => 
+      level.tasks.every(task => task.completed)
+    );
 
-    loadLevels();
-  }, [fetchLevels]);
+    if (allLevelsComplete && !victorySoundPlayed.current) {
+      // First scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Then show effects
+      VICTORY_SOUND.play().catch(error => {
+        console.error('Error playing victory sound:', error);
+      });
+      victorySoundPlayed.current = true;
+      setShowConfetti(true);
+      setShowVictoryBanner(true);
+      
+      // Only hide confetti after 10 seconds
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 10000);
+    }
+  }, [levels]);
 
+  // Warning blink effect
   useEffect(() => {
     const interval = setInterval(() => {
       setBlinkWarning(prev => !prev);
@@ -48,11 +101,11 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Set the expanded level to the active level on component mount
+  // Expand active level
   useEffect(() => {
     const activeLevel = levels.find((level) => level.isActive);
     if (activeLevel) {
-      setExpandedLevel(activeLevel.id); // Set the active level as expanded
+      setExpandedLevel(activeLevel.id);
     }
   }, [levels]);
 
@@ -61,11 +114,11 @@ function App() {
     if (progress >= 100) return 'text-gray-600';
     
     const colors = [
-      'text-soviet-gold',    // Level 1
-      'text-soviet-red',     // Level 2
-      'text-soviet-gold',    // Level 3
-      'text-soviet-red',     // Level 4
-      'text-soviet-gold'     // Level 5
+      'text-soviet-gold',
+      'text-soviet-red',
+      'text-soviet-gold',
+      'text-soviet-red',
+      'text-soviet-gold'
     ];
     return colors[level];
   };
@@ -77,8 +130,6 @@ function App() {
   const getProgressBarColor = (progress: number, isActive: boolean, isCompleted: boolean) => {
     if (!isActive) return 'bg-gray-600';
     if (isCompleted) return 'bg-green-600';
-    
-    // Return dynamic gradient based on progress
     return `bg-gradient-to-r from-soviet-red via-yellow-600 to-green-600 bg-[length:400%_400%]`;
   };
 
@@ -129,6 +180,15 @@ function App() {
   );
 
   const handleTaskToggle = async (levelId: number, taskId: number) => {
+    // Get current user's role from auth store
+    const user = useAuthStore.getState().user;
+    
+    // Check if user has permission to edit
+    if (!user || !['INNER_CIRCLE', 'PARTY_MEMBER'].includes(user.role)) {
+      console.error('Access denied: Insufficient clearance level');
+      return;
+    }
+
     try {
       const allLevels = await api.getLevels();
       const level = allLevels.find((l: Level) => l.id === levelId);
@@ -156,7 +216,6 @@ function App() {
           if (activateNextLevel) activateNextLevel(levelId);
         }
 
-        // Fire confetti
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 10000);
       }
@@ -165,13 +224,150 @@ function App() {
     }
   };
 
+  const handleReset = async () => {
+    try {
+      // Reset all levels to default state
+      await resetLevels();
+      
+      // Clear auth storage
+      logout();
+      
+      // Reset victory states
+      setShowVictoryBanner(false);
+      setShowConfetti(false);
+      victorySoundPlayed.current = false;
+      
+      // Force reload to ensure clean state
+      window.location.reload();
+    } catch (error) {
+      console.error('Error resetting game:', error);
+    }
+  };
+
+  // Handle login form submission
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await login(email, password);
+  };
+
+  // Load levels on component mount
+  useEffect(() => {
+    const loadLevels = async () => {
+      await fetchLevels();
+    };
+
+    loadLevels();
+  }, [fetchLevels]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
+           style={{
+             backgroundImage: 'url("https://images.unsplash.com/photo-1621532316464-73c5c59fd8ee?auto=format&fit=crop&q=80&w=2000")',
+             backgroundSize: 'cover',
+             backgroundPosition: 'center',
+             backgroundBlendMode: 'overlay',
+             backgroundColor: 'rgba(0, 0, 0, 0.85)'
+           }}>
+        <div className="max-w-md w-full mx-4">
+          <div className="text-center mb-8">
+            <Bot className="w-20 h-20 text-soviet-gold mx-auto mb-4" />
+            <h1 className="text-4xl font-propaganda text-soviet-red mb-2 tracking-wider leading-none drop-shadow-[0_0_10px_rgba(204,0,0,0.5)]">
+              BIG IGOR IS WATCHING YOU
+            </h1>
+            <p className="text-2xl text-soviet-gold font-propaganda tracking-wider drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]">
+              PRODUCTIVITY ADVANCEMENT MONITOR - SERIES 1984
+            </p>
+          </div>
+          <form onSubmit={handleLogin} className="bg-black/80 p-8 rounded-lg border-2 border-soviet-gold">
+            <div className="mb-6">
+              <label className="block font-propaganda text-soviet-gold mb-2 tracking-wider">PARTY MEMBER IDENTIFICATION</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soviet-gold" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-black border-2 border-soviet-gold text-soviet-gold px-12 py-3 rounded focus:outline-none focus:border-soviet-red font-propaganda tracking-wider"
+                  placeholder="ENTER EMAIL"
+                />
+              </div>
+            </div>
+            <div className="mb-6">
+              <label className="block font-propaganda text-soviet-gold mb-2 tracking-wider">SECURITY CODE</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soviet-gold" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-black border-2 border-soviet-gold text-soviet-gold px-12 py-3 rounded focus:outline-none focus:border-soviet-red font-propaganda tracking-wider"
+                  placeholder="ENTER PASSWORD"
+                />
+              </div>
+            </div>
+            {error && (
+              <div className="mb-6 text-soviet-red font-propaganda text-sm tracking-wider animate-pulse">
+                ⚠️ {error}
+              </div>
+            )}
+            <button
+              type="submit"
+              className="w-full bg-soviet-red hover:bg-soviet-gold transition-colors duration-300 text-white py-3 rounded font-propaganda tracking-wider"
+            >
+              AUTHENTICATE
+            </button>
+          </form>
+          <div className="text-center mt-4">
+            <p className="text-soviet-red font-propaganda text-sm tracking-wider animate-pulse">
+              UNAUTHORIZED ACCESS WILL BE SEVERELY, AND RESOLUTELY PUNISHED
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm">
-      {/* @ts-ignore */}
-      {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={750} />} 
-      {/* Header */}
+    <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm relative">
+      {showVictoryBanner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style={{ height: '100vh' }}>
+          <div className="text-center">
+            <h1 className="text-[150px] font-propaganda text-soviet-gold animate-pulse tracking-widest leading-none mb-8 drop-shadow-[0_0_30px_rgba(255,215,0,0.5)]">
+              VICTORY!!!
+            </h1>
+            <p className="text-4xl font-propaganda text-soviet-red mb-4 tracking-wider">
+              ALL OBJECTIVES ACHIEVED!
+            </p>
+            <button 
+              onClick={handleReset}
+              className="text-2xl font-propaganda text-soviet-gold tracking-wider hover:text-soviet-red transition-colors duration-300"
+            >
+              GLORY TO BIG IGOR!
+            </button>
+            <div className="mt-12 space-y-2 text-xl font-propaganda tracking-wider">
+              <p className="text-soviet-red">EFFICIENCY: 100%</p>
+              <p className="text-soviet-gold">LOYALTY: ABSOLUTE</p>
+              <p className="text-soviet-red">DEVIATION: 0%</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfetti && (
+        <div className="fixed inset-0 z-50 pointer-events-none">
+          <Confetti
+            width={width}
+            height={height}
+            recycle={false}
+            numberOfPieces={750}
+            gravity={0.3}
+            initialVelocityY={20}
+            colors={['#FFD700', '#CC0000', '#FFFFFF', '#FFB6C1']}
+          />
+        </div>
+      )}
       <section className="relative w-full bg-black text-white overflow-hidden pb-8">
-        {/* @ts-ignore */}
         <style global="true">{`
           @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
           
@@ -247,7 +443,6 @@ function App() {
         </div>
       </div>
 
-      {/* Overall Progress */}
       <div className="max-w-4xl mx-auto mb-8">
         <div className="bg-black/80 p-6 rounded border-2 border-soviet-gold">
           <div className="flex items-center justify-between mb-4">
@@ -270,7 +465,6 @@ function App() {
         </div>
       </div>
 
-      {/* Levels */}
       <div className="max-w-4xl mx-auto">
         {levels.map(level => {
           const progress = calculateLevelProgress(level.id);
@@ -379,7 +573,6 @@ function App() {
         })}
       </div>
 
-      {/* Footer */}
       <div className="max-w-4xl mx-auto mt-12 text-center">
         <p className="font-propaganda text-lg text-soviet-red mb-2 tracking-wider">
           REMINDER: THREE WARNINGS WILL RESULT IN IMMEDIATE RE-EDUCATION PROCEEDINGS IN ROOM 101

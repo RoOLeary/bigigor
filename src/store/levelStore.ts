@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useAuthStore } from './authStore';
 import { api } from '../services/api';
 
 interface Task {
@@ -28,7 +29,17 @@ interface LevelState {
   calculateLevelProgress: (levelId: number) => number;
   calculateOverallProgress: () => number;
   unlockLevel: (levelId: number) => Promise<void>;
+  resetLevels: () => Promise<void>;
 }
+
+// Define authorized roles that can edit the scoreboard
+const AUTHORIZED_ROLES = ['INNER_CIRCLE', 'PARTY_MEMBER'];
+
+// Helper function to check if a user has edit permissions
+const hasEditPermission = () => {
+  const user = useAuthStore.getState().user;
+  return user && AUTHORIZED_ROLES.includes(user.role);
+};
 
 const initialLevels: Level[] = [
   {
@@ -139,6 +150,12 @@ export const useLevelStore = create<LevelState>((set, get) => ({
   },
 
   toggleTask: async (levelId: string, taskId: string) => {
+    // Check if user has permission to edit
+    if (!hasEditPermission()) {
+      set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
+      return;
+    }
+
     set({ loading: true, error: null });
   
     try {
@@ -190,6 +207,12 @@ export const useLevelStore = create<LevelState>((set, get) => ({
   },
   
   addWarning: async (levelId: number) => {
+    // Check if user has permission to edit
+    if (!hasEditPermission()) {
+      set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
+      return;
+    }
+
     set({ loading: true, error: null });
     try {
       const state = get();
@@ -213,13 +236,18 @@ export const useLevelStore = create<LevelState>((set, get) => ({
   },
 
   activateNextLevel: async (currentLevelId: number) => {
+    // Check if user has permission to edit
+    if (!hasEditPermission()) {
+      set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
+      return;
+    }
+
     set({ loading: true, error: null });
     try {
       const state = get();
       const nextLevel = state.levels.find(l => l.id === (currentLevelId + 1).toString());
       if (!nextLevel) return;
       
-      // Update the next level on the API
       await api.updateLevel((currentLevelId + 1).toString(), { ...nextLevel, isActive: true });
       
       set((state: LevelState) => ({
@@ -256,13 +284,18 @@ export const useLevelStore = create<LevelState>((set, get) => ({
   },
 
   unlockLevel: async (levelId: number) => {
+    // Check if user has permission to edit
+    if (!hasEditPermission()) {
+      set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
+      return;
+    }
+
     set({ loading: true, error: null });
     try {
       const state = get();
       const level = state.levels.find(l => l.id === levelId.toString());
       if (!level) return;
       
-      // Update the level on the API to unlock it
       await api.updateLevel(levelId.toString(), { ...level, isActive: true });
       
       set((state: LevelState) => ({
@@ -278,4 +311,4 @@ export const useLevelStore = create<LevelState>((set, get) => ({
       set({ error: 'Failed to unlock level', loading: false });
     }
   },
-})); 
+}));
