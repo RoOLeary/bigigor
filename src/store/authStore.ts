@@ -10,12 +10,12 @@ export interface AuthorizedUser {
 // List of authorized users with their roles
 // In a production environment, this would be handled by a backend authentication service
 export const AUTHORIZED_USERS: AuthorizedUser[] = [
-  { email: "guillaiume@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "cyril@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "sarantos@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "aytac@ministry.gov", role: "PARTY_MEMBER" },
-  { email: "ronan@ministry.gov", role: "INNER_CIRCLE" },
-  { email: "proletariat@ministry.gov", role: "OBSERVER" }
+  { email: "guillaiume@findest.eu", role: "PARTY_MEMBER" },
+  { email: "cyril@findest.eu", role: "PARTY_MEMBER" },
+  { email: "sarantos@findest.eu", role: "PARTY_MEMBER" },
+  { email: "aytac@findest.eu", role: "PARTY_MEMBER" },
+  { email: "ronan@findest.eu", role: "INNER_CIRCLE" },
+  { email: "proletariat@mfindest.euv", role: "OBSERVER" }
 ];
 
 // Interface defining the shape of our auth state and actions
@@ -41,7 +41,7 @@ interface AuthState {
  */
 const validateCredentials = (email: string, password: string): { valid: boolean; error?: string } => {
   // Validate email format (@ministry.gov domain)
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@ministry\.gov$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@findest\.eu$/;
   if (!emailRegex.test(email)) {
     return { valid: false, error: "INVALID EMAIL FORMAT - MINISTRY EMAILS ONLY" };
   }
