@@ -39,8 +39,9 @@ interface AuthState {
  * @param password - User's password (must meet security requirements)
  * @returns Object containing validation result and optional error message
  */
+
 const validateCredentials = (email: string, password: string): { valid: boolean; error?: string } => {
-  // Validate email format (@ministry.gov domain)
+  // Validate email format (@findest.eu domain)
   const emailRegex = /^[a-zA-Z0-9._%+-]+@findest\.eu$/;
   if (!emailRegex.test(email)) {
     return { valid: false, error: "INVALID EMAIL FORMAT - MINISTRY EMAILS ONLY" };
@@ -62,6 +63,7 @@ const validateCredentials = (email: string, password: string): { valid: boolean;
   // - Contains uppercase letter
   // - Contains number
   // - Contains special character
+  
   const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
   if (!passwordRegex.test(password)) {
     return { valid: false, error: "PASSWORD DOES NOT MEET SECURITY REQUIREMENTS" };

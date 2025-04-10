@@ -306,7 +306,7 @@ function App() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-black border-2 border-soviet-gold text-soviet-gold px-12 py-3 rounded focus:outline-none focus:border-soviet-red font-propaganda tracking-wider"
-                  placeholder="ENTER EMAIL"
+                  placeholder="ENTER PARTY MEMBERSHIP EMAIL"
                 />
               </div>
             </div>
@@ -337,7 +337,7 @@ function App() {
           </form>
           <div className="text-center mt-4">
             <p className="text-soviet-red font-propaganda text-sm tracking-wider animate-pulse">
-              UNAUTHORIZED ACCESS WILL BE SEVERELY, AND RESOLUTELY PUNISHED
+              UNAUTHORIZED ACCESS WILL BE SEVERELY [AND RESOLUTELY] PUNISHED
             </p>
           </div>
         </div>
