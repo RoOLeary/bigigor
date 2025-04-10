@@ -278,15 +278,7 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
-           style={{
-            //  backgroundImage: 'url("https://images.unsplash.com/photo-1621532316464-73c5c59fd8ee?auto=format&fit=crop&q=80&w=2000")',
-          //    backgroundSize: 'cover',
-          //    backgroundPosition: 'center',
-          //    backgroundBlendMode: 'overlay',
-          //    backgroundColor: 'rgba(0, 0, 0, 0.85)'
-          }}
-          >
+      <div className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
         <div className="max-w-md w-full mx-4">
           <div className="text-center mb-8">
             <Bot className="w-20 h-20 text-soviet-gold mx-auto mb-4" />
