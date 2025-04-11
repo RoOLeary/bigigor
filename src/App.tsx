@@ -276,6 +276,17 @@ function App() {
     loadLevels();
   }, [fetchLevels]);
 
+  useEffect(() => {
+    if (showUnauthorizedOverlay) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showUnauthorizedOverlay]);
+
   if (!isAuthenticated) {
     return (
       <div className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
@@ -349,8 +360,8 @@ function App() {
   return (
     <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm relative">
       {showUnauthorizedOverlay && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
-          <div className="text-center max-w-2xl mx-auto px-4">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" style={{ overflow: 'hidden' }}>
+          <div className="text-center max-w-2xl mx-auto px-4" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <h1 className="text-4xl md:text-6xl font-propaganda text-soviet-red mb-8 tracking-widest leading-none drop-shadow-[0_0_20px_rgba(204,0,0,0.8)] animate-pulse">
               UNAUTHORIZED ACTION DETECTED
             </h1>
