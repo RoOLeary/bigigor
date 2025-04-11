@@ -289,7 +289,15 @@ function App() {
               PRODUCTIVITY ADVANCEMENT MONITOR - SERIES 1984
             </p>
           </div>
+          <p className="text-sm text-soviet-gold text-balance py-2">Default credentials: <br /> 
+              <span className='flex gap-8'>
+                <span>Email: observer@findest.eu</span>
+                <span>Pass: bigigoriswatching</span>
+              </span>
+          </p>
           <form onSubmit={handleLogin} className="bg-black/80 p-8 rounded-lg border-2 border-soviet-gold">
+            
+            
             <div className="mb-6">
               <label className="block font-propaganda text-soviet-gold mb-2 tracking-wider">PARTY MEMBER IDENTIFICATION</label>
               <div className="relative">

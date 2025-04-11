@@ -15,7 +15,7 @@ export const AUTHORIZED_USERS: AuthorizedUser[] = [
   { email: "sarantos@findest.eu", role: "PARTY_MEMBER" },
   { email: "aytac@findest.eu", role: "PARTY_MEMBER" },
   { email: "ronan@findest.eu", role: "INNER_CIRCLE" },
-  { email: "proletariat@findest.eu", role: "OBSERVER" }
+  { email: "observer@findest.eu", role: "OBSERVER" }
 ];
 
 // Interface defining the shape of our auth state and actions
@@ -53,8 +53,8 @@ const validateCredentials = (email: string, password: string): { valid: boolean;
     return { valid: false, error: "ACCESS DENIED - UNAUTHORIZED USER" };
   }
 
-  // Special case for proletariat user
-  if (email === "proletariat@findest.eu" && password === "proletariat") {
+  // Special case for observer user
+  if (email === "observer@findest.eu" && password === "bigigoriswatching") {
     return { valid: true };
   }
 
