@@ -10,7 +10,7 @@ export interface AuthorizedUser {
 // List of authorized users with their roles
 // In a production environment, this would be handled by a backend authentication service
 export const AUTHORIZED_USERS: AuthorizedUser[] = [
-  { email: "guillaiume@findest.eu", role: "PARTY_MEMBER" },
+  { email: "guillaume@findest.eu", role: "PARTY_MEMBER" },
   { email: "cyril@findest.eu", role: "PARTY_MEMBER" },
   { email: "sarantos@findest.eu", role: "PARTY_MEMBER" },
   { email: "aytac@findest.eu", role: "PARTY_MEMBER" },
