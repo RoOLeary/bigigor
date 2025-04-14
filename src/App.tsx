@@ -500,7 +500,7 @@ function App() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <Trophy className="w-8 h-8 text-soviet-gold mr-3" />
-                <h2 className="text-2xl font-propaganda tracking-wider text-soviet-gold">TOTAL PARTY PROGRESS</h2>
+                <h2 className="text-2xl font-propaganda tracking-wider text-soviet-gold">OVERALL MONITOR PROGRESS</h2>
               </div>
               <div className="flex items-center">
                 <span className="text-3xl font-propaganda tracking-wider text-soviet-gold">
