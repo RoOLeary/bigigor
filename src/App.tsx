@@ -6,6 +6,9 @@ import { api } from './services/api';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@uidotdev/usehooks';
 
+//import unauthorised sound effect
+import unauthorisedSound from './assets/unauthorised.mp3';
+const UNAUTHORISED_SOUND = new Audio(unauthorisedSound);
 // Victory sound effect for game completion
 import victorySound from './assets/1984.mp3';
 const VICTORY_SOUND = new Audio(victorySound);
@@ -98,6 +101,7 @@ function App() {
 
   // First, add this useEffect to handle scroll locking
   useEffect(() => {
+    UNAUTHORISED_SOUND.play()
     if (showUnauthorizedOverlay) {
       document.body.style.overflow = 'hidden';
     } else {
