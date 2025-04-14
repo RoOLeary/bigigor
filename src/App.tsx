@@ -369,7 +369,7 @@ function App() {
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-propaganda text-soviet-red mb-8 tracking-widest leading-none drop-shadow-[0_0_20px_rgba(204,0,0,0.8)] animate-pulse">
-                UNAUTHORIZED ACTION DETECTED
+                UNAUTHORIZED ACTION DETECTED!
               </h1>
               <p className="text-2xl md:text-4xl font-propaganda text-soviet-gold mb-4 tracking-wider drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">
                 REMAIN WHERE YOU ARE. AUTHORITIES HAVE BEEN ALERTED AND ARE EN ROUTE.
