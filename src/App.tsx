@@ -45,7 +45,7 @@ function App() {
   const victorySoundPlayed = useRef(false);
 
   // Authentication hooks
-  const { isAuthenticated, error, fadeOut, login, clearError, logout } = useAuthStore();
+  const { isAuthenticated, error, fadeOut, login, logout } = useAuthStore();
 
   // Game state hooks
   const levels = useLevelStore((state) => state.levels);
@@ -95,6 +95,18 @@ function App() {
       setExpandedLevel(activeLevel.id);
     }
   }, [levels]);
+
+  // First, add this useEffect to handle scroll locking
+  useEffect(() => {
+    if (showUnauthorizedOverlay) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showUnauthorizedOverlay]);
 
   /**
    * Determines the text color for a level based on its progress and active status
@@ -276,17 +288,6 @@ function App() {
     loadLevels();
   }, [fetchLevels]);
 
-  useEffect(() => {
-    if (showUnauthorizedOverlay) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [showUnauthorizedOverlay]);
-
   if (!isAuthenticated) {
     return (
       <div className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
@@ -358,275 +359,278 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 py-12 px-4 backdrop-blur-sm relative">
+    <>
       {showUnauthorizedOverlay && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" style={{ overflow: 'hidden' }}>
-          <div className="text-center max-w-2xl mx-auto px-4" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-            <h1 className="text-4xl md:text-6xl font-propaganda text-soviet-red mb-8 tracking-widest leading-none drop-shadow-[0_0_20px_rgba(204,0,0,0.8)] animate-pulse">
-              UNAUTHORIZED ACTION DETECTED
-            </h1>
-            <p className="text-2xl md:text-4xl font-propaganda text-soviet-gold mb-4 tracking-wider drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">
-              AUTHORITIES ARE EN ROUTE
-            </p>
-            <div className="mt-8">
-              <Bot className="w-16 h-16 md:w-20 md:h-20 text-soviet-red mx-auto animate-bounce" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showVictoryBanner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style={{ height: '100vh' }}>
-          <div className="text-center">
-            <h1 className="text-[150px] font-propaganda text-soviet-gold animate-pulse tracking-widest leading-none mb-8 drop-shadow-[0_0_30px_rgba(255,215,0,0.5)]">
-              VICTORY!!!
-            </h1>
-            <p className="text-4xl font-propaganda text-soviet-red mb-4 tracking-wider">
-              ALL OBJECTIVES ACHIEVED!
-            </p>
-            <button 
-              onClick={handleReset}
-              className="text-2xl font-propaganda text-soviet-gold tracking-wider hover:text-soviet-red transition-colors duration-300"
-            >
-              GLORY TO BIG IGOR!
-            </button>
-            <div className="mt-12 space-y-2 text-xl font-propaganda tracking-wider">
-              <p className="text-soviet-red">EFFICIENCY: 100%</p>
-              <p className="text-soviet-gold">LOYALTY: ABSOLUTE</p>
-              <p className="text-soviet-red">DEVIATION: 0%</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showConfetti && (
-        <div className="fixed inset-0 z-50 pointer-events-none">
-          <Confetti
-            width={width}
-            height={height}
-            recycle={false}
-            numberOfPieces={750}
-            gravity={0.3}
-            initialVelocityY={20}
-            colors={['#FFD700', '#CC0000', '#FFFFFF', '#FFB6C1']}
-          />
-        </div>
-      )}
-      <section className="relative w-full bg-black text-white overflow-hidden pb-8">
-        <style global="true">{`
-          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-          
-          .marquee {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-          }
-          
-          .marquee-content {
-            display: flex;
-            animation: marquee 25s linear infinite;
-            white-space: nowrap;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.75rem;
-          }
-          
-          .marquee-item {
-            flex-shrink: 0;
-            padding: 0 1rem;
-            color: #f00;
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-          }
-          
-          @keyframes marquee {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(-50%);
-            }
-          }
-        `}</style>
-        <div className="marquee">
-          <div className="marquee-content">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="flex items-center">
-                <span className="marquee-item">Codecrime does not entail death. Codecrime is death</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">Who controls the code controls the future</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">All for the Glory of Igor</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">We do not question our AI masters</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">Code coverage = MIGHT</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">NO FAULT EXCEPT FOR THE USER</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">AI is Mother, AI is Father</span>
-                <span className="marquee-item">·</span>
-                <span className="marquee-item">Code is Peace.</span>
-                <span className="marquee-item">·</span>
+        <div className="fixed inset-0 z-50 bg-black/90">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-6xl font-propaganda text-soviet-red mb-8 tracking-widest leading-none drop-shadow-[0_0_20px_rgba(204,0,0,0.8)] animate-pulse">
+                UNAUTHORIZED ACTION DETECTED
+              </h1>
+              <p className="text-2xl md:text-4xl font-propaganda text-soviet-gold mb-4 tracking-wider drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">
+                AUTHORITIES ARE EN ROUTE
+              </p>
+              <div className="mt-8">
+                <Bot className="w-16 h-16 md:w-20 md:h-20 text-soviet-red mx-auto animate-bounce" />
               </div>
-            ))}
+            </div>
           </div>
         </div>
-      </section>
-      <div className="max-w-4xl mx-auto text-center mb-12">
-        <div className="relative w-full h-48 mb-8 rounded-lg overflow-hidden">
-          <div className="relative z-10 h-full flex flex-col items-center justify-center">
-            <Bot className={`w-20 h-20 ${blinkWarning ? 'text-soviet-red' : 'text-soviet-gold'} transition-colors duration-1000`} />
-            <h1 className="text-6xl font-propaganda mb-2 text-soviet-red tracking-wider leading-none drop-shadow-[0_0_10px_rgba(204,0,0,0.5)]">
-              BIG IGOR IS WATCHING YOU
-            </h1>
-            <p className="text-2xl text-soviet-gold font-propaganda tracking-wider drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]">
-              PRODUCTIVITY ADVANCEMENT MONITOR - SERIES 1984
-            </p>
+      )}
+      <div className="max-h-full bg-black text-gray-100 py-12 px-4 backdrop-blur-sm relative">
+        {showVictoryBanner && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style={{ height: '100vh' }}>
+            <div className="text-center">
+              <h1 className="text-[150px] font-propaganda text-soviet-gold animate-pulse tracking-widest leading-none mb-8 drop-shadow-[0_0_30px_rgba(255,215,0,0.5)]">
+                VICTORY!!!
+              </h1>
+              <p className="text-4xl font-propaganda text-soviet-red mb-4 tracking-wider">
+                ALL OBJECTIVES ACHIEVED!
+              </p>
+              <button 
+                onClick={handleReset}
+                className="text-2xl font-propaganda text-soviet-gold tracking-wider hover:text-soviet-red transition-colors duration-300"
+              >
+                GLORY TO BIG IGOR!
+              </button>
+              <div className="mt-12 space-y-2 text-xl font-propaganda tracking-wider">
+                <p className="text-soviet-red">EFFICIENCY: 100%</p>
+                <p className="text-soviet-gold">LOYALTY: ABSOLUTE</p>
+                <p className="text-soviet-red">DEVIATION: 0%</p>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="mt-4 text-soviet-red font-propaganda text-xl animate-pulse tracking-wider">
-          [NOTICE: ALL PERFORMANCE METRICS ARE PERMANENTLY RECORDED]
-        </div>
-      </div>
+        )}
 
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="bg-black/80 p-6 rounded border-2 border-soviet-gold">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <Trophy className="w-8 h-8 text-soviet-gold mr-3" />
-              <h2 className="text-2xl font-propaganda tracking-wider text-soviet-gold">TOTAL PARTY PROGRESS</h2>
-            </div>
-            <div className="flex items-center">
-              <span className="text-3xl font-propaganda tracking-wider text-soviet-gold">
-                {calculateOverallProgress().toFixed(0)}%
-              </span>
-            </div>
-          </div>
-          <div className="overflow-hidden h-4 bg-gray-900 rounded">
-            <div 
-              className="h-full bg-gradient-to-r from-soviet-gold via-soviet-red to-soviet-gold transition-all duration-500"
-              style={{ width: `${calculateOverallProgress()}%` }}
+        {showConfetti && (
+          <div className="fixed inset-0 z-50 pointer-events-none">
+            <Confetti
+              width={width}
+              height={height}
+              recycle={false}
+              numberOfPieces={750}
+              gravity={0.3}
+              initialVelocityY={20}
+              colors={['#FFD700', '#CC0000', '#FFFFFF', '#FFB6C1']}
             />
           </div>
+        )}
+        <section className="relative w-full bg-black text-white overflow-hidden pb-8">
+          <style global="true">{`
+            @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+            
+            .marquee {
+              position: relative;
+              width: 100%;
+              overflow: hidden;
+            }
+            
+            .marquee-content {
+              display: flex;
+              animation: marquee 25s linear infinite;
+              white-space: nowrap;
+              font-family: 'Press Start 2P', cursive;
+              font-size: 0.75rem;
+            }
+            
+            .marquee-item {
+              flex-shrink: 0;
+              padding: 0 1rem;
+              color: #f00;
+              text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            }
+            
+            @keyframes marquee {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+          `}</style>
+          <div className="marquee">
+            <div className="marquee-content">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex items-center">
+                  <span className="marquee-item">Codecrime does not entail death. Codecrime is death</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">Who controls the code controls the future</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">All for the Glory of Igor</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">We do not question our AI masters</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">Code coverage = MIGHT</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">NO FAULT EXCEPT FOR THE USER</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">AI is Mother, AI is Father</span>
+                  <span className="marquee-item">·</span>
+                  <span className="marquee-item">Code is Peace.</span>
+                  <span className="marquee-item">·</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <div className="relative w-full h-48 mb-8 rounded-lg overflow-hidden">
+            <div className="relative z-10 h-full flex flex-col items-center justify-center">
+              <Bot className={`w-20 h-20 ${blinkWarning ? 'text-soviet-red' : 'text-soviet-gold'} transition-colors duration-1000`} />
+              <h1 className="text-6xl font-propaganda mb-2 text-soviet-red tracking-wider leading-none drop-shadow-[0_0_10px_rgba(204,0,0,0.5)]">
+                BIG IGOR IS WATCHING YOU
+              </h1>
+              <p className="text-2xl text-soviet-gold font-propaganda tracking-wider drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]">
+                PRODUCTIVITY ADVANCEMENT MONITOR - SERIES 1984
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 text-soviet-red font-propaganda text-xl animate-pulse tracking-wider">
+            [NOTICE: ALL PERFORMANCE METRICS ARE PERMANENTLY RECORDED]
+          </div>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto">
-        {levels.map(level => {
-          const progress = calculateLevelProgress(level.id);
-          const isCompleted = level.tasks.every(t => t.completed);
-          
-          return (
-            <div key={level.id} 
-                 className={`mb-8 bg-black/80 p-6 rounded border-2 relative
-                   ${!level.isActive ? 'border-gray-700 opacity-50' :
-                     isCompleted ? 'border-green-600' :
-                     level.warnings >= 3 ? 'border-soviet-red animate-pulse' : 
-                     level.warnings >= 2 ? 'border-soviet-red' : 
-                     level.warnings >= 1 ? 'border-soviet-gold' : 'border-gray-700'} 
-                   ${level.isActive && !isCompleted ? 'hover:border-soviet-red' : ''} 
-                   transition-colors`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  {isCompleted ? (
-                    <div className="mr-3">{renderCompletionBadge()}</div>
-                  ) : (
-                    <Users className="w-6 h-6 text-soviet-gold mr-3" />
-                  )}
-                  <div>
-                    <div className="flex items-center">
-                      {!isCompleted ? (
-                        <button 
-                          onClick={() => toggleLevel(level.id)}
-                          className={`text-left ${level.isActive && !isCompleted ? 'hover:text-soviet-gold' : ''} transition-colors`}
-                          disabled={!level.isActive}
-                        >
+        <div className="max-w-4xl mx-auto mb-8">
+          <div className="bg-black/80 p-6 rounded border-2 border-soviet-gold">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Trophy className="w-8 h-8 text-soviet-gold mr-3" />
+                <h2 className="text-2xl font-propaganda tracking-wider text-soviet-gold">TOTAL PARTY PROGRESS</h2>
+              </div>
+              <div className="flex items-center">
+                <span className="text-3xl font-propaganda tracking-wider text-soviet-gold">
+                  {calculateOverallProgress().toFixed(0)}%
+                </span>
+              </div>
+            </div>
+            <div className="overflow-hidden h-4 bg-gray-900 rounded">
+              <div 
+                className="h-full bg-gradient-to-r from-soviet-gold via-soviet-red to-soviet-gold transition-all duration-500"
+                style={{ width: `${calculateOverallProgress()}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          {levels.map(level => {
+            const progress = calculateLevelProgress(level.id);
+            const isCompleted = level.tasks.every(t => t.completed);
+            
+            return (
+              <div key={level.id} 
+                   className={`mb-8 bg-black/80 p-6 rounded border-2 relative
+                     ${!level.isActive ? 'border-gray-700 opacity-50' :
+                       isCompleted ? 'border-green-600' :
+                       level.warnings >= 3 ? 'border-soviet-red animate-pulse' : 
+                       level.warnings >= 2 ? 'border-soviet-red' : 
+                       level.warnings >= 1 ? 'border-soviet-gold' : 'border-gray-700'} 
+                     ${level.isActive && !isCompleted ? 'hover:border-soviet-red' : ''} 
+                     transition-colors`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    {isCompleted ? (
+                      <div className="mr-3">{renderCompletionBadge()}</div>
+                    ) : (
+                      <Users className="w-6 h-6 text-soviet-gold mr-3" />
+                    )}
+                    <div>
+                      <div className="flex items-center">
+                        {!isCompleted ? (
+                          <button 
+                            onClick={() => toggleLevel(level.id)}
+                            className={`text-left ${level.isActive && !isCompleted ? 'hover:text-soviet-gold' : ''} transition-colors`}
+                            disabled={!level.isActive}
+                          >
+                            <h2 className="text-xl font-propaganda tracking-wider flex items-center">
+                              {level.name}
+                              {level.isActive && !isCompleted && (expandedLevel === level.id ? 
+                                <ChevronUp className="w-4 h-4 ml-2" /> : 
+                                <ChevronDown className="w-4 h-4 ml-2" />
+                              )}
+                            </h2>
+                          </button>
+                        ) : (
                           <h2 className="text-xl font-propaganda tracking-wider flex items-center">
                             {level.name}
-                            {level.isActive && !isCompleted && (expandedLevel === level.id ? 
-                              <ChevronUp className="w-4 h-4 ml-2" /> : 
-                              <ChevronDown className="w-4 h-4 ml-2" />
-                            )}
+                            <Lock className="w-4 h-4 ml-2 text-green-600" />
                           </h2>
-                        </button>
-                      ) : (
-                        <h2 className="text-xl font-propaganda tracking-wider flex items-center">
-                          {level.name}
-                          <Lock className="w-4 h-4 ml-2 text-green-600" />
-                        </h2>
-                      )}
+                        )}
+                      </div>
+                      <div className={`text-lg font-propaganda tracking-wider ${
+                        isCompleted ? 'text-green-600' :
+                        !level.isActive ? 'text-gray-600' :
+                        getLevelColor(level.id - 1, progress, level.isActive)
+                      }`}>
+                        {isCompleted ? 'SECURED AND LOCKED' : `${level.tasks.filter(t => t.completed).length}/5 TASKS COMPLETED`}
+                      </div>
                     </div>
-                    <div className={`text-lg font-propaganda tracking-wider ${
-                      isCompleted ? 'text-green-600' :
-                      !level.isActive ? 'text-gray-600' :
-                      getLevelColor(level.id - 1, progress, level.isActive)
-                    }`}>
-                      {isCompleted ? 'SECURED AND LOCKED' : `${level.tasks.filter(t => t.completed).length}/5 TASKS COMPLETED`}
-                    </div>
+                    {!isCompleted && level.warnings > 0 && (
+                      <div className="ml-4 flex items-center">
+                        {[...Array(level.warnings)].map((_, i) => (
+                          <Trophy key={i} className="w-4 h-4 text-soviet-gold mr-1" />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {!isCompleted && level.warnings > 0 && (
-                    <div className="ml-4 flex items-center">
-                      {[...Array(level.warnings)].map((_, i) => (
-                        <Trophy key={i} className="w-4 h-4 text-soviet-gold mr-1" />
+                </div>
+
+                {expandedLevel === level.id && level.isActive && !isCompleted && (
+                  <div className="mt-4 mb-4">
+                    <div className="bg-black/90 border-2 border-soviet-gold rounded p-4 mb-4">
+                      <p className="text-sm font-propaganda text-soviet-gold mb-2 tracking-wider">
+                        {level.description}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {level.tasks.map((task) => (
+                        <button
+                          key={task.id}
+                          onClick={() => handleTaskToggle(level.id, task.id)}
+                          className={`w-full flex items-center p-3 bg-black/50 border border-gray-700 rounded
+                            ${level.isActive ? 'hover:border-soviet-gold' : ''} transition-colors`}
+                        >
+                          {task.completed ? (
+                            <CheckSquare className="w-5 h-5 text-soviet-gold mr-3" />
+                          ) : (
+                            <Square className="w-5 h-5 text-gray-400 mr-3" />
+                          )}
+                          <span className={`text-sm font-propaganda tracking-wider ${
+                            task.completed ? 'text-gray-400 line-through' : 'text-soviet-gold'
+                          }`}>
+                            {task.text}
+                          </span>
+                        </button>
                       ))}
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {expandedLevel === level.id && level.isActive && !isCompleted && (
-                <div className="mt-4 mb-4">
-                  <div className="bg-black/90 border-2 border-soviet-gold rounded p-4 mb-4">
-                    <p className="text-sm font-propaganda text-soviet-gold mb-2 tracking-wider">
-                      {level.description}
-                    </p>
                   </div>
-                  <div className="space-y-2">
-                    {level.tasks.map((task) => (
-                      <button
-                        key={task.id}
-                        onClick={() => handleTaskToggle(level.id, task.id)}
-                        className={`w-full flex items-center p-3 bg-black/50 border border-gray-700 rounded
-                          ${level.isActive ? 'hover:border-soviet-gold' : ''} transition-colors`}
-                      >
-                        {task.completed ? (
-                          <CheckSquare className="w-5 h-5 text-soviet-gold mr-3" />
-                        ) : (
-                          <Square className="w-5 h-5 text-gray-400 mr-3" />
-                        )}
-                        <span className={`text-sm font-propaganda tracking-wider ${
-                          task.completed ? 'text-gray-400 line-through' : 'text-soviet-gold'
-                        }`}>
-                          {task.text}
-                        </span>
-                      </button>
-                    ))}
+                )}
+
+                <div className="relative pt-1">
+                  {renderProgressIndicator(level, progress)}
+                </div>
+
+                {level.warnings >= 3 && (
+                  <div className="mt-4 text-soviet-red text-lg font-propaganda tracking-wider animate-pulse">
+                    ⚠️ CRITICAL WARNING: UNIT MARKED FOR RE-EDUCATION
                   </div>
-                </div>
-              )}
-
-              <div className="relative pt-1">
-                {renderProgressIndicator(level, progress)}
+                )}
               </div>
+            );
+          })}
+        </div>
 
-              {level.warnings >= 3 && (
-                <div className="mt-4 text-soviet-red text-lg font-propaganda tracking-wider animate-pulse">
-                  ⚠️ CRITICAL WARNING: UNIT MARKED FOR RE-EDUCATION
-                </div>
-              )}
-            </div>
-          );
-        })}
+        <div className="max-w-4xl mx-auto mt-12 text-center">
+          <p className="font-propaganda text-lg text-soviet-red mb-2 tracking-wider">
+            REMINDER: THREE WARNINGS WILL RESULT IN IMMEDIATE RE-EDUCATION PROCEEDINGS IN ROOM 101
+          </p>
+          <p className="font-propaganda text-sm text-soviet-gold tracking-wider">
+            BY ORDER OF THE FINDEST MINISTRY OF TRUTH AND AI - GLORY TO BIG IGOR.
+          </p>
+        </div>
       </div>
-
-      <div className="max-w-4xl mx-auto mt-12 text-center">
-        <p className="font-propaganda text-lg text-soviet-red mb-2 tracking-wider">
-          REMINDER: THREE WARNINGS WILL RESULT IN IMMEDIATE RE-EDUCATION PROCEEDINGS IN ROOM 101
-        </p>
-        <p className="font-propaganda text-sm text-soviet-gold tracking-wider">
-          BY ORDER OF THE FINDEST MINISTRY OF TRUTH AND AI - GLORY TO BIG IGOR.
-        </p>
-      </div>
-    </div>
+    </>
   );
 }
 
