@@ -368,7 +368,7 @@ function App() {
                 UNAUTHORIZED ACTION DETECTED
               </h1>
               <p className="text-2xl md:text-4xl font-propaganda text-soviet-gold mb-4 tracking-wider drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">
-                AUTHORITIES ARE EN ROUTE
+                REMAIN WHERE YOU ARE. AUTHORITIES HAVE BEEN ALERTED AND ARE EN ROUTE.
               </p>
               <div className="mt-8">
                 <Bot className="w-16 h-16 md:w-20 md:h-20 text-soviet-red mx-auto animate-bounce" />
