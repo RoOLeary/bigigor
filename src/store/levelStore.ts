@@ -216,6 +216,7 @@ export const useLevelStore = create<LevelState>((set, get) => ({
     }
   },
   
+
   updateTaskText: async (levelId: string, taskId: string, newText: string) => {
     // Check if user has permission to edit
     if (!hasEditPermission()) {
