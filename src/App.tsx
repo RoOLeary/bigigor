@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, Target, Users, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock, Mail } from 'lucide-react';
+import { Bot, Target, Users, Trophy, ChevronDown, ChevronUp, CheckSquare, Square, Check, Lock, Mail, Edit2 } from 'lucide-react';
 import { useLevelStore } from './store/levelStore';
 import { useAuthStore } from './store/authStore';
 import { api } from './services/api';
@@ -19,13 +19,13 @@ VICTORY_SOUND.onerror = (e) => {
 };
 
 interface Task {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
 
 interface Level {
-  id: number;
+  id: string;
   name: string;
   description: string;
   tasks: Task[];
@@ -43,6 +43,8 @@ function App() {
   const [showVictoryBanner, setShowVictoryBanner] = useState(false);
   const [showUnauthorizedOverlay, setShowUnauthorizedOverlay] = useState(false);
   const { width, height } = useWindowSize();
+  const windowWidth = width || 0;
+  const windowHeight = height || 0;
   
   // Ref to track if victory sound has been played
   const victorySoundPlayed = useRef(false);
@@ -57,6 +59,17 @@ function App() {
   const calculateOverallProgress = useLevelStore((state) => state.calculateOverallProgress);
   const fetchLevels = useLevelStore((state) => state.fetchLevels);
   const resetLevels = useLevelStore((state) => state.resetLevels);
+  const { updateTaskText } = useLevelStore();
+
+  // Additional state
+  const [editingTask, setEditingTask] = useState<{ levelId: string; taskId: string } | null>(null);
+  const [editedTaskText, setEditedTaskText] = useState('');
+
+  // Add hasEditPermission function
+  const hasEditPermission = () => {
+    const user = useAuthStore.getState().user;
+    return user && ['INNER_CIRCLE', 'PARTY_MEMBER'].includes(user.role);
+  };
 
   // Check for game completion and play victory sound
   useEffect(() => {
@@ -137,7 +150,7 @@ function App() {
    * Toggles the expanded state of a level
    * @param id - The ID of the level to toggle
    */
-  const toggleLevel = (id: number) => {
+  const toggleLevel = (id: string) => {
     setExpandedLevel(expandedLevel === id ? null : id);
   };
 
@@ -210,7 +223,7 @@ function App() {
     </div>
   );
 
-  const handleTaskToggle = async (levelId: number, taskId: number) => {
+  const handleTaskToggle = async (levelId: string, taskId: string) => {
     // Get current user's role from auth store
     const user = useAuthStore.getState().user;
     
@@ -239,14 +252,14 @@ function App() {
       toggleTask(levelId, taskId);
 
       const allTasksCompleted = updatedLevel.tasks.every((t: Task) => t.completed);
-      if (allTasksCompleted && levelId < 5) {
-        const nextLevelId = levelId + 1;
+      if (allTasksCompleted && parseInt(levelId) < 5) {
+        const nextLevelId = (parseInt(levelId) + 1).toString();
         const nextLevel = allLevels.find((l: Level) => l.id === nextLevelId);
         if (nextLevel) {
           const updatedNextLevel = { ...nextLevel, isActive: true };
           await api.updateLevel(nextLevelId, updatedNextLevel);
           const activateNextLevel = useLevelStore.getState().activateNextLevel;
-          if (activateNextLevel) activateNextLevel(levelId);
+          if (activateNextLevel) activateNextLevel(parseInt(levelId));
         }
 
         setShowConfetti(true);
@@ -291,6 +304,15 @@ function App() {
 
     loadLevels();
   }, [fetchLevels]);
+
+  const handleTaskEdit = async (levelId: string, taskId: string, newText: string) => {
+    try {
+      await updateTaskText(levelId, taskId, newText);
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error updating task text:', error);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -409,8 +431,8 @@ function App() {
         {showConfetti && (
           <div className="fixed inset-0 z-50 pointer-events-none">
             <Confetti
-              width={width}
-              height={height}
+              width={windowWidth}
+              height={windowHeight}
               recycle={false}
               numberOfPieces={750}
               gravity={0.3}
@@ -420,7 +442,7 @@ function App() {
           </div>
         )}
         <section className="relative w-full bg-black text-white overflow-hidden pb-8">
-          <style global="true">{`
+          <style>{`
             @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
             
             .marquee {
@@ -521,6 +543,7 @@ function App() {
           {levels.map(level => {
             const progress = calculateLevelProgress(level.id);
             const isCompleted = level.tasks.every(t => t.completed);
+            const levelColor = getLevelColor(parseInt(level.id) - 1, progress, level.isActive);
             
             return (
               <div key={level.id} 
@@ -562,11 +585,7 @@ function App() {
                           </h2>
                         )}
                       </div>
-                      <div className={`text-lg font-propaganda tracking-wider ${
-                        isCompleted ? 'text-green-600' :
-                        !level.isActive ? 'text-gray-600' :
-                        getLevelColor(level.id - 1, progress, level.isActive)
-                      }`}>
+                      <div className={`text-lg font-propaganda tracking-wider ${levelColor}`}>
                         {isCompleted ? 'SECURED AND LOCKED' : `${level.tasks.filter(t => t.completed).length}/5 TASKS COMPLETED`}
                       </div>
                     </div>
@@ -600,11 +619,41 @@ function App() {
                           ) : (
                             <Square className="w-5 h-5 text-gray-400 mr-3" />
                           )}
-                          <span className={`text-sm font-propaganda tracking-wider ${
-                            task.completed ? 'text-gray-400 line-through' : 'text-soviet-gold'
-                          }`}>
-                            {task.text}
-                          </span>
+                          {editingTask?.levelId === level.id && editingTask?.taskId === task.id ? (
+                            <input
+                              type="text"
+                              value={editedTaskText}
+                              onChange={(e) => setEditedTaskText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleTaskEdit(level.id, task.id, editedTaskText);
+                                } else if (e.key === 'Escape') {
+                                  setEditingTask(null);
+                                }
+                              }}
+                              onBlur={() => handleTaskEdit(level.id, task.id, editedTaskText)}
+                              className="flex-1 bg-transparent text-soviet-gold font-propaganda tracking-wider focus:outline-none"
+                              autoFocus
+                            />
+                          ) : (
+                            <span className={`text-sm font-propaganda tracking-wider ${
+                              task.completed ? 'text-gray-400 line-through' : 'text-soviet-gold'
+                            }`}>
+                              {task.text}
+                            </span>
+                          )}
+                          {!task.completed && hasEditPermission() && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingTask({ levelId: level.id, taskId: task.id });
+                                setEditedTaskText(task.text);
+                              }}
+                              className="ml-2 p-1 hover:bg-soviet-gold/20 rounded"
+                            >
+                              <Edit2 className="w-4 h-4 text-soviet-gold" />
+                            </button>
+                          )}
                         </button>
                       ))}
                     </div>

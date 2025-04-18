@@ -33,6 +33,7 @@ interface LevelState {
   error: string | null;
   fetchLevels: () => Promise<void>;
   toggleTask: (levelId: string, taskId: string) => Promise<void>;
+  updateTaskText: (levelId: string, taskId: string, newText: string) => Promise<void>;
   addWarning: (levelId: string) => Promise<void>;
   activateNextLevel: (currentLevelId: number) => Promise<void>;
   calculateLevelProgress: (levelId: string) => number;
@@ -215,6 +216,37 @@ export const useLevelStore = create<LevelState>((set, get) => ({
     }
   },
   
+  updateTaskText: async (levelId: string, taskId: string, newText: string) => {
+    // Check if user has permission to edit
+    if (!hasEditPermission()) {
+      set({ error: 'ACCESS DENIED: INSUFFICIENT CLEARANCE LEVEL', loading: false });
+      return;
+    }
+
+    set({ loading: true, error: null });
+    try {
+      const state = get();
+      const level = state.levels.find(l => l.id === levelId);
+      if (!level) return;
+
+      const updatedTasks = level.tasks.map(task =>
+        task.id === taskId ? { ...task, text: newText } : task
+      );
+
+      const updatedLevel = { ...level, tasks: updatedTasks };
+      await api.updateLevel(levelId, updatedLevel);
+
+      set((state) => ({
+        levels: state.levels.map(l =>
+          l.id === levelId ? updatedLevel : l
+        ),
+        loading: false
+      }));
+    } catch (error) {
+      set({ error: 'Failed to update task text', loading: false });
+    }
+  },
+
   addWarning: async (levelId: string) => {
     // Check if user has permission to edit
     if (!hasEditPermission()) {
